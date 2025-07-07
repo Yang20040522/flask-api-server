@@ -5,6 +5,11 @@ import pyodbc
 app = Flask(__name__)
 CORS(app)
 
+# ✅ 測試首頁
+@app.route('/')
+def hello():
+    return {'message': 'Flask API is running on Render!'}
+
 # ✅ Azure SQL Server 資料庫設定
 server = 'shoppingsystem666.database.windows.net'
 database = 'ShoppingSystem'
@@ -15,18 +20,16 @@ driver = '{ODBC Driver 17 for SQL Server}'
 # 🔍 查詢產品（用 ProductID 查）
 @app.route("/api/product", methods=["GET"])
 def get_product():
-    product_id = request.args.get("id")  # 改用 id 查詢
+    product_id = request.args.get("id")
     if not product_id:
         return jsonify({"error": "請提供 id 參數"}), 400
 
     try:
-        # 建立資料庫連線
         conn = pyodbc.connect(
             f'DRIVER={driver};SERVER={server};DATABASE={database};UID={username};PWD={password}'
         )
         cursor = conn.cursor()
 
-        # 查詢 ProductID 對應的商品資料
         query = """
             SELECT ProductID, Category, SubCategory, ProductName, Brand
             FROM dbo.Products
@@ -53,6 +56,6 @@ def get_product():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# ✅ 啟動伺服器
+# ✅ 啟動伺服器（Render 會自動處理，不用加 port）
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run()
