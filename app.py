@@ -12,12 +12,12 @@ username = 'systemgod666'
 password = 'Crazydog888'
 driver = '{ODBC Driver 17 for SQL Server}'
 
-# 🔍 查詢產品（用條碼 barcode 查）
+# 🔍 查詢產品（用 ProductID 查）
 @app.route("/api/product", methods=["GET"])
 def get_product():
-    barcode = request.args.get("barcode")
-    if not barcode:
-        return jsonify({"error": "請提供 barcode 參數"}), 400
+    product_id = request.args.get("id")  # 改用 id 查詢
+    if not product_id:
+        return jsonify({"error": "請提供 id 參數"}), 400
 
     try:
         # 建立資料庫連線
@@ -26,21 +26,25 @@ def get_product():
         )
         cursor = conn.cursor()
 
-        # 執行查詢
-        query = "SELECT * FROM dbo.Products WHERE barcode = ?"
-        cursor.execute(query, (barcode,))
+        # 查詢 ProductID 對應的商品資料
+        query = """
+            SELECT ProductID, Category, SubCategory, ProductName, Brand
+            FROM dbo.Products
+            WHERE ProductID = ?
+        """
+        cursor.execute(query, (product_id,))
         row = cursor.fetchone()
 
         cursor.close()
         conn.close()
 
         if row:
-            # 請根據你的欄位順序修改下列欄位（假設為 id, name, barcode, price）
             result = {
-                "id": row[0],
-                "name": row[1],
-                "barcode": row[2],
-                "price": float(row[3])
+                "ProductID": row[0],
+                "Category": row[1],
+                "SubCategory": row[2],
+                "ProductName": row[3],
+                "Brand": row[4]
             }
             return jsonify(result)
         else:
